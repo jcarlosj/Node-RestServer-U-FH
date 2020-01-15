@@ -11,10 +11,21 @@ app .get( '/usuario', ( request, response ) => {
 });
 
 app .post('/usuario', ( request, response ) => {
-    response .json({ 
-        'message': 'put /usuario',
-        'user': request.body
-    });
+    const { name, age } = request .body;
+    
+    if( name === undefined ) {
+        response .status( 400 ) .json({
+            success: false,
+            message: 'name is required'
+        });
+    }
+    else {
+        response .json({ 
+            success: true,
+            'message': 'put /usuario',
+            'user': request.body
+        });
+    }
 });
 
 app .put( '/usuario/:id', ( request, response ) => {
