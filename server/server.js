@@ -1,3 +1,5 @@
+require ( './config/config' );
+
 const express = require( 'express' ),
       app = express();
 
@@ -44,6 +46,6 @@ app .delete( '/usuario/:id', ( request, response ) => {
 });
 
 /** Lanza el Servidor */
-app .listen( 3000, () => {
-    console .log( 'Servidor escuchando en el puerto ', 3000 );
+app .listen( process .env .PORT, () => {
+    console .log( 'Servidor escuchando en el puerto:', process .env .PORT );
 });
