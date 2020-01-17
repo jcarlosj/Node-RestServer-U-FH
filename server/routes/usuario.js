@@ -1,26 +1,40 @@
 const express = require( 'express' ),
-      app = express();
+      app = express(),
+      User = require( '../models/usuario' );    // Importa el modelo de Usuario
 
 app .get( '/usuario', ( request, response ) => {
     response .json({ 'message': 'get /usuario' });
 });
 
-app .post('/usuario', ( request, response ) => {
-    const { name, age } = request .body;
+/** Crea un recurso (un usuario) */
+app .post( '/usuario', ( request, response ) => {
+    const { name, age, email, password, role } = request .body;        // Obtenemos los datos enviados de la petición (usando el concepto de Destructuración)
     
-    if( name === undefined ) {
-        response .status( 400 ) .json({
-            success: false,
-            message: 'name is required'
-        });
-    }
-    else {
-        response .json({ 
+    /** Crea Instancia de tipo Usuario y asigna sus valores */
+    let user = new User({
+        name,
+        age,
+        email,
+        password,
+        role
+    });      
+
+    /** Registra los datos en MongoDB */
+    user .save( ( error, responseDB ) => {
+        if( error ) {
+            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error
+            });
+        }
+
+        /** Ejecuta siempre que no exista un error */
+        response .json({        // Cuando no se coloca el status Node asume implicitamente que fue exitosa la petición y el estado será 200 por defecto
             success: true,
-            'message': 'post /usuario',
-            'user': request.body
+            user: responseDB
         });
-    }
+
+    });
 });
 
 app .put( '/usuario/:id', ( request, response ) => {
