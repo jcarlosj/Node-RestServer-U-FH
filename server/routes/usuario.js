@@ -7,7 +7,26 @@ const express = require( 'express' ),
       User = require( '../models/usuario' );    // Importa el modelo de Usuario
 
 app .get( '/usuario', ( request, response ) => {
-    response .json({ 'message': 'get /usuario' });
+    let since = Number( request .query .since ) || 0,
+        limit = Number( request .query .limit ) || 5;
+
+    User .find({})
+        .skip( since )      // Número de documentos por salto 
+        .limit( limit )     // Número límite que mostrará
+        .exec( ( error, usuarios ) => {
+            if( error ) {
+                return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                    success: false,
+                    error
+                });
+            }
+
+            response .json({
+                success: true,
+                limit: usuarios .length,
+                usuarios
+            });
+        });
 });
 
 /** Crea un recurso (un usuario) */
