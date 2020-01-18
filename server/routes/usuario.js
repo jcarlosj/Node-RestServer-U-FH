@@ -1,6 +1,9 @@
 const express = require( 'express' ),
       app = express(),
-      bcrypt = require( 'bcryptjs' ),             // Dependencia para encriptar contraseñas
+      /** Dependencias */
+      bcrypt = require( 'bcryptjs' ),             // Encriptar contraseñas
+      _ = require( 'underscore' ),                // Librería que proporciona funciones de utilidad para tareas de programación comunes.
+      /** Modelos Requeridos */
       User = require( '../models/usuario' );    // Importa el modelo de Usuario
 
 app .get( '/usuario', ( request, response ) => {
@@ -40,11 +43,8 @@ app .post( '/usuario', ( request, response ) => {
 
 app .put( '/usuario/:id', ( request, response ) => {
     let user_id = request .params .id,                          // Obtenemos los parámetros enviados (GET)
-        body = request .body;   // Obtenermos los valores enviados (POST)
-
-    /** Elimina propiedades del objeto 'body' para evitar que se puedan actualizar estos campos */
-    delete body .password;      // Si no se eliminara se podría actualizar (sin encripción)
-    delete body .google;        // Si no se eliminara se podría actualizar
+        body = _ .pick( request .body, [ 'name', 'email', 'img', 'role', 'status' ]);   // Filtra datos enviados del 'body' obteniendo solo los valores de los campos permitidos (POST)
+    /** NOTA: La línea anterior eliminó las propiedades (password, google) del objeto 'body' para evitar que se puedan actualizar estos campos */
 
     /** Actualiza los datos en MongoDB */
     User .findByIdAndUpdate( user_id, body, { new: true, runValidators: true }, ( error, responseDB ) => {   // findByIdAndUpdate(id, update, options, callback) - { new: true } 'true' devuelve el documento modificado en lugar del original. por defecto es 'false'
