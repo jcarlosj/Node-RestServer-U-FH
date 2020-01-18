@@ -1,5 +1,6 @@
 const express = require( 'express' ),
       app = express(),
+      bcrypt = require( 'bcryptjs' ),             // Dependencia para encriptar contraseñas
       User = require( '../models/usuario' );    // Importa el modelo de Usuario
 
 app .get( '/usuario', ( request, response ) => {
@@ -15,7 +16,7 @@ app .post( '/usuario', ( request, response ) => {
         name,
         age,
         email,
-        password,
+        password: bcrypt .hashSync( password, 10 ),
         role
     });      
 
