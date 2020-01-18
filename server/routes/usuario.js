@@ -11,8 +11,8 @@ app .get( '/usuario', ( request, response ) => {
         limit = Number( request .query .limit ) || 5;
 
     User .find({})
-        .skip( since )      // Número de documentos por salto 
-        .limit( limit )     // Número límite que mostrará
+        .skip( since )      // Número de documentos por salto (Filtro para paginar datos)
+        .limit( limit )     // Número límite que mostrará (Filtro para paginar datos)
         .exec( ( error, usuarios ) => {
             if( error ) {
                 return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
@@ -21,11 +21,18 @@ app .get( '/usuario', ( request, response ) => {
                 });
             }
 
-            response .json({
-                success: true,
-                limit: usuarios .length,
-                usuarios
+            /** Cuenta cantidad total de registros en la BD */
+            User .count({}, ( err, counter ) => {
+
+                response .json({
+                    success: true,
+                    count: counter,
+                    limit: usuarios .length,        // Cuenta cantidad de registros para mostrar
+                    usuarios
+                });
+
             });
+
         });
 });
 
