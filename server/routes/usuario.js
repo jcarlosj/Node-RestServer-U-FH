@@ -9,8 +9,12 @@ const express = require( 'express' ),
 app .get( '/usuario', ( request, response ) => {
     let since = Number( request .query .since ) || 0,
         limit = Number( request .query .limit ) || 5;
+
+    activeUsersOnly = {
+        status: true
+    }
         
-    User .find({}, 'name email img role status google' )   // Filtra campos que se desean obtener (mostrar)
+    User .find( activeUsersOnly, 'name email img role status google' )   // Filtra campos que se desean obtener (mostrar) con usuarios que tienen estado activo
         .skip( since )      // Número de documentos por salto (Filtro para paginar datos)
         .limit( limit )     // Número límite que mostrará (Filtro para paginar datos)
         .exec( ( error, usuarios ) => {
@@ -21,8 +25,8 @@ app .get( '/usuario', ( request, response ) => {
                 });
             }
 
-            /** Cuenta cantidad total de registros en la BD */
-            User .count({}, ( err, counter ) => {
+            /** Cuenta cantidad total de registros en la BD con usuarios que tienen estado activo */
+            User .count( activeUsersOnly, ( err, counter ) => {
 
                 response .json({
                     success: true,
@@ -100,15 +104,6 @@ app .patch( '/usuario/:id', ( request, response ) => {
             return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
                 success: false,
                 error
-            });
-        }
-
-        if( ! responseDB ) {        // ! responseDB o responseDB === null (funciona igual)
-            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
-                success: false,
-                error: { 
-                    message: 'Usuario no activo'
-                }
             });
         }
 
