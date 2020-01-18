@@ -37,9 +37,10 @@ mongoose .connection .on( 'error', ( error ) => {
 const run = async () => {
   await mongoose .connect( 'mongodb://localhost:27017/db_cafe', {
     useNewUrlParser: true,
-    autoReconnect: true,
-    reconnectTries: 1000000,
-    reconnectInterval: 3000
+    useCreateIndex: true,       // Falso por defecto. Configurado para truehacer que la compilación de índice predeterminada de Mongoose se use en createIndex()
+    useNewUrlParser: true,      // Bandera para permitir a los usuarios recurrir al antiguo analizador (Controlador DB MongoDB)
+    useFindAndModify: false,    // Configurado para false hacer findOneAndUpdate() y findOneAndRemove() usar nativo en findOneAndUpdate() lugar de findAndModify()
+    useUnifiedTopology: true    // Configura nuevo motor de topología de Mongoose
   })
 }
 
