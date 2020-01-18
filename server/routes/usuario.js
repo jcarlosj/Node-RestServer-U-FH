@@ -92,10 +92,32 @@ app .put( '/usuario/:id', ( request, response ) => {
 });
 
 app .delete( '/usuario/:id', ( request, response ) => {
-    response .json({ 
-        'message': 'delete /usuario',
-        'user_id': request .params .id  
+    let user_id = request .params .id;      // Obtiene el id del usuario enviado como parámetro por la URL (GET)
+
+    User .findByIdAndRemove( user_id, ( error, responseDB ) => {
+        if( error ) {
+            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error
+            });
+        }
+
+        if( ! responseDB ) {        // ! responseDB o responseDB === null (funciona igual)
+            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error: { 
+                    message: 'Usuario no encontrado'
+                }
+            });
+        }
+
+        /** Ejecuta siempre que no exista un error */
+        response .json({ 
+            success: true,
+            user: responseDB
+        });
     });
+
 });
 
 module .exports = app;
