@@ -9,8 +9,8 @@ const express = require( 'express' ),
 app .get( '/usuario', ( request, response ) => {
     let since = Number( request .query .since ) || 0,
         limit = Number( request .query .limit ) || 5;
-
-    User .find({}, 'name email' )   // Filtra campos que se desean obtener (mostrar)
+        
+    User .find({}, 'name email img role status google' )   // Filtra campos que se desean obtener (mostrar)
         .skip( since )      // Número de documentos por salto (Filtro para paginar datos)
         .limit( limit )     // Número límite que mostrará (Filtro para paginar datos)
         .exec( ( error, usuarios ) => {
@@ -87,6 +87,36 @@ app .put( '/usuario/:id', ( request, response ) => {
             user: responseDB
         });
 
+    });
+
+});
+
+app .patch( '/usuario/:id', ( request, response ) => {
+    let user_id = request .params .id,      // Obtiene el id del usuario enviado como parámetro por la URL (GET)
+        changeStatus = { status: false };
+
+    User .findByIdAndUpdate( user_id, changeStatus, { new: true }, ( error, responseDB ) => {
+        if( error ) {
+            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error
+            });
+        }
+
+        if( ! responseDB ) {        // ! responseDB o responseDB === null (funciona igual)
+            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error: { 
+                    message: 'Usuario no activo'
+                }
+            });
+        }
+
+        /** Ejecuta siempre que no exista un error */
+        response .json({ 
+            success: true,
+            user: responseDB
+        });
     });
 
 });
