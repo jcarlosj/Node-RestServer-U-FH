@@ -10,7 +10,7 @@ app .get( '/usuario', ( request, response ) => {
     let since = Number( request .query .since ) || 0,
         limit = Number( request .query .limit ) || 5;
 
-    User .find({})
+    User .find({}, 'name email' )   // Filtra campos que se desean obtener (mostrar)
         .skip( since )      // Número de documentos por salto (Filtro para paginar datos)
         .limit( limit )     // Número límite que mostrará (Filtro para paginar datos)
         .exec( ( error, usuarios ) => {
