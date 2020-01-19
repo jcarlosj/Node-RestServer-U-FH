@@ -35,16 +35,21 @@ mongoose .connection .on( 'error', ( error ) => {
 })
 
 const run = async () => {
-  await mongoose .connect( 'mongodb://localhost:27017/db_cafe', {
+  await mongoose .connect( process .env .URI_DB, {
+	//dbName: 'test',
     useNewUrlParser: true,
-    useCreateIndex: true,       // Falso por defecto. Configurado para truehacer que la compilación de índice predeterminada de Mongoose se use en createIndex()
-    useNewUrlParser: true,      // Bandera para permitir a los usuarios recurrir al antiguo analizador (Controlador DB MongoDB)
-    useFindAndModify: false,    // Configurado para false hacer findOneAndUpdate() y findOneAndRemove() usar nativo en findOneAndUpdate() lugar de findAndModify()
-    useUnifiedTopology: true    // Configura nuevo motor de topología de Mongoose
-  })
+    useCreateIndex: true,       	// Falso por defecto. Configurado para truehacer que la compilación de índice predeterminada de Mongoose se use en createIndex()
+    useNewUrlParser: true,      	// Bandera para permitir a los usuarios recurrir al antiguo analizador (Controlador DB MongoDB)
+    useFindAndModify: false,    	// Configurado para false hacer findOneAndUpdate() y findOneAndRemove() usar nativo en findOneAndUpdate() lugar de findAndModify()
+	useUnifiedTopology: true,    	// Configura nuevo motor de topología de Mongoose
+	//serverSelectionTimeoutMS: 5000 	// Timeout after 5s instead of 30s
+  });
 }
 
-run() .catch( error => console .error( error ) );
+run() .catch( err => {
+  console .error( 'Mongoose', err );
+  process .exit( 1 );
+});
 
 /** Lanza el Servidor */
 app .listen( process .env .PORT, () => {

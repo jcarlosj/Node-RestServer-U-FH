@@ -26,7 +26,7 @@ app .get( '/usuario', ( request, response ) => {
             }
 
             /** Cuenta cantidad total de registros en la BD con usuarios que tienen estado activo */
-            User .count( activeUsersOnly, ( err, counter ) => {
+            User .countDocuments( activeUsersOnly, ( err, counter ) => {  /** count() estará obsoleto en las próximas versiones, recomiendan usar en su lugar: collection.countDocuments o collection.estimatedDocumentCount */
 
                 response .json({
                     success: true,
