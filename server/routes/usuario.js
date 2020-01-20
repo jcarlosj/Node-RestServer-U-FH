@@ -13,7 +13,8 @@ const express = require( 'express' ),
  * 
  */
 app .get( '/usuario', validateToken, ( request, response ) => {
-    let since = Number( request .query .since ) || 0,
+    let { _id, name, email, role } = request .user,      // Obtiene datos del PayLoad (Destructuración) 
+        since = Number( request .query .since ) || 0,
         limit = Number( request .query .limit ) || 5;
 
     activeUsersOnly = {
@@ -36,6 +37,12 @@ app .get( '/usuario', validateToken, ( request, response ) => {
 
                 response .json({
                     success: true,
+                    authenticated_user: {
+                        _id,
+                        name,
+                        email,
+                        role
+                    },
                     count: counter,
                     limit: usuarios .length,        // Cuenta cantidad de registros para mostrar
                     usuarios
