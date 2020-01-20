@@ -4,9 +4,15 @@ const express = require( 'express' ),
       bcrypt = require( 'bcryptjs' ),             // Encriptar contraseñas
       _ = require( 'underscore' ),                // Librería que proporciona funciones de utilidad para tareas de programación comunes.
       /** Modelos Requeridos */
-      User = require( '../models/usuario' );    // Importa el modelo de Usuario
+      User = require( '../models/usuario' ),    // Importa el modelo de Usuario
+      /** Token */
+      { validateToken } = require( '../middlewares/authentication' );
 
-app .get( '/usuario', ( request, response ) => {
+/** Obtiene la lista de usuarios, que cumplen con las siguientes condiciones
+ * - status: true
+ * 
+ */
+app .get( '/usuario', validateToken, ( request, response ) => {
     let since = Number( request .query .since ) || 0,
         limit = Number( request .query .limit ) || 5;
 
