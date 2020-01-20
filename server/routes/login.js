@@ -43,9 +43,9 @@ app .post( '/login', ( request, response ) => {
         let token = jwt .sign({
                 user: usuarioDB,
             }, 
-            'secret-string',        // Semilla de validación
+            process .env .SEED,        // Key or Seed: Semilla de validación (No olvidar configurar variable de entorno en producción).
             {
-                expiresIn: 60 * 60 * 24 * 30    // (Expiración en 30 días)
+                expiresIn: process .env .TOKEN_EXPIRATION_DATE  
                 /** seconds minutes hours days */
             }
         );
