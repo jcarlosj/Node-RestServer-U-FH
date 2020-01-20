@@ -4,12 +4,12 @@ const express = require( 'express' ),
       app = express(),
       mongoose = require( 'mongoose' );                  // ODM (Object Document Mapping) by MongoDB
 
-/** Middleware */
+/** Middlewares */
 app .use( express .json() );                            // Analiza las solicitudes entrantes con cargas JSON
 app .use( express .urlencoded({ extended: true }));     // para analizar application/x-www-form-urlencoded
 
 /** Routes */
-app .use( require( './routes/usuario' ) );              // Requiere el archivo de rutas de usuario
+app .use( require( './routes/routes' ) );              // Requiere el archivo de rutas de la aplicación
 
 /** Conexión a Base de Datos MongoDB con Mongoose usando async/await */
 mongoose .Promise = Promise;
