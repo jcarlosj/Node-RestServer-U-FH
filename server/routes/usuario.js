@@ -54,7 +54,7 @@ app .get( '/usuario', validateToken, ( request, response ) => {
 });
 
 /** Crea un recurso (un usuario) */
-app .post( '/usuario', ( request, response ) => {
+app .post( '/usuario', validateToken, ( request, response ) => {
     const { name, age, email, password, role } = request .body;        // Obtenemos los datos enviados de la petición (usando el concepto de Destructuración)
     
     /** Crea Instancia de tipo Usuario y asigna sus valores */
@@ -84,7 +84,7 @@ app .post( '/usuario', ( request, response ) => {
     });
 });
 
-app .put( '/usuario/:id', ( request, response ) => {
+app .put( '/usuario/:id', validateToken, ( request, response ) => {
     let user_id = request .params .id,                          // Obtenemos los parámetros enviados (GET)
         body = _ .pick( request .body, [ 'name', 'email', 'img', 'role', 'status' ]);   // Filtra datos enviados del 'body' obteniendo solo los valores de los campos permitidos (POST)
     /** NOTA: La línea anterior eliminó las propiedades (password, google) del objeto 'body' para evitar que se puedan actualizar estos campos */
@@ -108,7 +108,7 @@ app .put( '/usuario/:id', ( request, response ) => {
 
 });
 
-app .patch( '/usuario/:id', ( request, response ) => {
+app .patch( '/usuario/:id', validateToken, ( request, response ) => {
     let user_id = request .params .id,      // Obtiene el id del usuario enviado como parámetro por la URL (GET)
         changeStatus = { status: false };
 
@@ -129,7 +129,7 @@ app .patch( '/usuario/:id', ( request, response ) => {
 
 });
 
-app .delete( '/usuario/:id', ( request, response ) => {
+app .delete( '/usuario/:id', validateToken, ( request, response ) => {
     let user_id = request .params .id;      // Obtiene el id del usuario enviado como parámetro por la URL (GET)
 
     User .findByIdAndRemove( user_id, ( error, responseDB ) => {

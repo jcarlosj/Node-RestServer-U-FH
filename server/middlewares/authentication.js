@@ -4,14 +4,16 @@ const jwt = require( 'jsonwebtoken' );           // JSON Web Token
 let validateToken = ( request, response, next ) => {
     let token = request .get( 'authorization' );    // Obtiene el valor del key 'authorization' en el Header del Request (o petición)
 
-    console .info( 'Middleware > TOKEN:', token );
+    console .info( 'Middleware > TOKEN:', token || 'No se ha obtenido' );
     
     /** Match TOKEN: Verificación del Token */
     jwt .verify( token, process .env .SEED, ( error, decoded ) => {
         if( error ) {
             return response .status( 401 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
                 success: false,
-                error
+                error: {
+                    message: 'No se ha proporcionado un TOKEN o no es válido'
+                }
             });
         }
 
