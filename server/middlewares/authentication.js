@@ -26,6 +26,25 @@ let validateToken = ( request, response, next ) => {
     
 }
 
+/** Verifica ADMIN_ROLE */
+let validateAdminRole = ( request, response, next ) => {
+    let user = request .user;
+
+    if( 'ADMIN_ROLE' === user .role ) {
+        next();     // Le da continuación a la ejecución del código donde implementemos el Middleware 'validateAdminRole'
+    }
+    else {
+        return response .json({
+            success: false,
+            error: {
+                message: 'El usuario no es administrador'
+            }
+        });
+    }
+
+}
+
 module .exports = {
-    validateToken       // Nombre del Middleware
+    validateToken,      
+    validateAdminRole  
 }
