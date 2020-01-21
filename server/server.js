@@ -2,11 +2,13 @@ require ( './config/config' );
 
 const express = require( 'express' ),
       app = express(),
-      mongoose = require( 'mongoose' );                  // ODM (Object Document Mapping) by MongoDB
+      path = require( 'path' ),                         // Dependencia Nativa de Node para las rutas
+      mongoose = require( 'mongoose' );                 // ODM (Object Document Mapping) by MongoDB
 
 /** Middlewares */
 app .use( express .json() );                            // Analiza las solicitudes entrantes con cargas JSON
 app .use( express .urlencoded({ extended: true }));     // para analizar application/x-www-form-urlencoded
+app .use( express .static( path .resolve( __dirname, '../public' ) ) );  // Habilita directorio 'public' (Test: En un RestServer no se despliegan vistas) 
 
 /** Routes */
 app .use( require( './routes/routes' ) );              // Requiere el archivo de rutas de la aplicación
