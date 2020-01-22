@@ -12,10 +12,9 @@ let Schema = mongoose .Schema,
             required: [ true, 'El nombre de la categoría es requerido' ]
         },
         description: {
-            type: String,
-            required: [ true, 'La descripción de la categoría es requerida' ]
+            type: String
         }  
 
     });
 
-module .exports = mongoose .model( 'Categoria', userSchema );
+module .exports = mongoose .model( 'Categoria', categorySchema );
