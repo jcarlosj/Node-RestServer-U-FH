@@ -82,19 +82,28 @@ async function verify( token ) {       // Regresa una Promesa por que es una fun
     console .log( 'Email >', payload .email );
     console .log( 'Picture >', payload .picture );
     console .groupEnd();
-}
-//verify() .catch( console .error );
-  
+
+    return {
+        name: payload .name,
+        email: payload .email,
+        img: payload .picture,
+        google: true
+    }
+} 
 
 /** URI que Obtendrá el Token de Google */
-app .post( '/google', ( request, response ) => {
-    let googleToken = request .body .idtoken;      // Recibe Token de Google
-
-    verify( googleToken );
+app .post( '/google', async ( request, response ) => {
+    let googleToken = request .body .idtoken,      // Recibe Token de Google
+    googleUser = await verify( googleToken ) .catch( error => {
+            return response .status( 403 ) .json({
+                success: false,
+                error       
+            });
+    });       
 
     response .json({
         success: true,
-        googleToken
+        user: googleUser
     });
 });
 
