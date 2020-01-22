@@ -61,5 +61,14 @@ app .post( '/login', ( request, response ) => {
 
 });
 
+/** URI que Obtendrá el Token de Google */
+app .post( '/google', ( request, response ) => {
+    let googleToken = request .body .idtoken;      // Recibe Token de Google
+
+    response .json({
+        success: true,
+        googleToken
+    });
+});
 
 module .exports = app;
