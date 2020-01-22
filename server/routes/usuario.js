@@ -3,6 +3,9 @@ const express = require( 'express' ),
       /** Dependencias */
       bcrypt = require( 'bcryptjs' ),             // Encriptar contraseñas
       _ = require( 'underscore' ),                // Librería que proporciona funciones de utilidad para tareas de programación comunes.
+      { OAuth2Client } = require( 'google-auth-library' );  // Librería de Autencación de Google para Node.js
+      client = new OAuth2Client( process .env .CLIENT_ID ); 
+
       /** Modelos Requeridos */
       User = require( '../models/usuario' ),    // Importa el modelo de Usuario
       /** Token */

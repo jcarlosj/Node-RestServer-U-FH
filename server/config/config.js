@@ -16,3 +16,5 @@ process .env .URI_DB = ( process .env .NODE_ENV === 'dev' ) ?
 // Versión del driver (Variable de Entorno definida en Heroku): '2.12.0 or later' (3.0 or later no funciona)
 //process .env .URI_DB = process .env .MONGO_URI;
 
+/** Google Client ID (by Google Sign-In) */
+process .env .CLIENT_ID = process .env .CLIENT_ID || '654197891799-fcm3jr2e25hap2q7i3ik5bnicj3tjjve.apps.googleusercontent.com'; 
