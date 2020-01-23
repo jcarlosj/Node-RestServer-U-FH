@@ -7,10 +7,18 @@ const express = require( 'express' ),
 
 /** Muestra todas las productos */
 app .get( '/producto', validateToken, ( request, response ) => {
-    const { _id, name, email, role } = request .user;
+    const { _id, name, email, role } = request .user,
+          since = Number( request .query .since ) || 0,
+          limit = Number( request .query .limit ) || 5;
 
-    Product .find({})
-        .sort( 'category' )                        // Ordena de forma Descendente a partir del campo 'category'
+    onlyProductsAvailable = {
+        available: true
+    }
+
+    Product .find( onlyProductsAvailable )
+        .skip( since )      // Número de documentos por salto (Filtro para paginar datos)
+        .limit( limit )     // Número límite que mostrará (Filtro para paginar datos)
+        //.sort( 'category' )                        // Ordena de forma Descendente a partir del campo 'category'
         .sort( 'name' )                            // Ordena de forma Descendente a partir del campo 'name' del Producto
         .populate( 'category' )                    // Popular datos del campo 'user' con el Modelo Categoria y mostrar todos los campos 
         .populate( 'user', 'name email role' )     // Popular datos del campo 'user' con el Modelo Usuario y de este solo mostrar los campos '_id', 'name', 'role' e 'email'
@@ -23,17 +31,22 @@ app .get( '/producto', validateToken, ( request, response ) => {
                 });
             }
 
-            /** Retorna la respuesta (siempre que no ocurra un error) */
-            response .json({
-                success: true,
-                count: productos .length,
-                authenticated_user: {
-                    _id,
-                    name,
-                    email,
-                    role
-                },
-                product: productos
+            Product .countDocuments( onlyProductsAvailable, ( err, counter ) => {
+
+                /** Retorna la respuesta (siempre que no ocurra un error) */
+                response .json({
+                    success: true,
+                    count: counter,
+                    limit: productos .length,
+                    authenticated_user: {
+                        _id,
+                        name,
+                        email,
+                        role
+                    },
+                    product: productos
+                });
+
             });
 
         });
@@ -67,7 +80,9 @@ app .get( '/producto/:id', validateToken, ( request, response ) => {
             },
             product: productDB
         });
-    });
+    }) 
+    .populate( 'category' )
+    .populate( 'user', 'name email role' );
 
 });
 
