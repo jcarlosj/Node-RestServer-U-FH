@@ -12,6 +12,7 @@ app .get( '/categoria', validateToken, ( request, response ) => {
     //console .log( 'user', request .user );
 
     Category .find({}, 'name description user' )   // Filtra campos que se desean obtener (mostrar)
+        .sort( 'name' )                            // Ordena de forma Descendente a partir del campo 'name'
         .populate( 'user', 'name email role' )     // Popular datos del campo 'user' con el Modelo Usuario y de este solo mostrar los campos '_id', 'name', 'role' e 'email'
         .exec( ( error, categorias ) => {
 
