@@ -10,6 +10,10 @@ app .get( '/producto', validateToken, ( request, response ) => {
     const { _id, name, email, role } = request .user;
 
     Product .find({})
+        .sort( 'category' )                        // Ordena de forma Descendente a partir del campo 'category'
+        .sort( 'name' )                            // Ordena de forma Descendente a partir del campo 'name' del Producto
+        .populate( 'category' )                    // Popular datos del campo 'user' con el Modelo Categoria y mostrar todos los campos 
+        .populate( 'user', 'name email role' )     // Popular datos del campo 'user' con el Modelo Usuario y de este solo mostrar los campos '_id', 'name', 'role' e 'email'
         .exec( ( error, productos ) => {
             /** Valida Error de Bases de datos */
             if( error ) {
