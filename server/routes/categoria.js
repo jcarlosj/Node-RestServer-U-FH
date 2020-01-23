@@ -1,16 +1,21 @@
 const express = require( 'express' ),
       app = express(),
       /** Modelos Requeridos */
-      Category = require( '../models/categoria' );    // Importa el modelo de Usuario
+      Category = require( '../models/categoria' ),    // Importa el modelo de Usuario
+      /** Middleware Autenticación */
+      { validateToken, validateAdminRole } = require( '../middlewares/authentication' );
 
 /** Muestra todas las categorías */
-app .get( '/categoria', ( request, response ) => {
+app .get( '/categoria', validateToken, ( request, response ) => {
+    let { _id, name, email, role } = request .user;      // Obtiene datos del PayLoad (Destructuración) 
 
-    Category .find({}, 'name description' )   // Filtra campos que se desean obtener (mostrar)
+    //console .log( 'user', request .user );
+
+    Category .find({}, 'user_id name description' )   // Filtra campos que se desean obtener (mostrar)
         .exec( ( error, categorias ) => {
 
             if( error ) {
-                return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
                     success: false,
                     error
                 });
@@ -19,6 +24,12 @@ app .get( '/categoria', ( request, response ) => {
             /** Ejecuta siempre que no exista un error */
             response .json({
                 success: true,
+                authenticated_user: {
+                    _id,
+                    name,
+                    email,
+                    role
+                },
                 count: categorias .length,
                 categorias
             });
@@ -28,8 +39,9 @@ app .get( '/categoria', ( request, response ) => {
 });
 
 /** Muestra una categoría por ID */
-app .get( '/categoria/:id', ( request, response ) => {
-    let id = request .params .id;
+app .get( '/categoria/:id', validateToken, ( request, response ) => {
+    let { _id, name, email, role } = request .user,      // Obtiene datos del PayLoad (Destructuración) 
+        id = request .params .id;
 
     Category .findOne({
         _id: id
@@ -44,6 +56,12 @@ app .get( '/categoria/:id', ( request, response ) => {
         /** Ejecuta siempre que no exista un error */
         response .json({        // Cuando no se coloca el status Node asume implicitamente que fue exitosa la petición y el estado será 200 por defecto
             success: true,
+            authenticated_user: {
+                _id,
+                name,
+                email,
+                role
+            },
             category: categoryDB
         });
 
@@ -52,11 +70,11 @@ app .get( '/categoria/:id', ( request, response ) => {
 });
 
 /** Crea categoría */
-app .post( '/categoria', ( request, response ) => {
+app .post( '/categoria', validateToken, ( request, response ) => {
     const { name, description } = request .body;        // Obtenemos los datos enviados de la petición (usando el concepto de Destructuración)
 
     let category = new Category({ 
-        //user, 
+        user_id: request .user ._id, 
         name, 
         description
     });
@@ -64,7 +82,15 @@ app .post( '/categoria', ( request, response ) => {
     /** Registra los datos en MongoDB */
     category .save( ( error, categoryDB ) => {
         if( error ) {
-            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+            return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error
+            });
+        }
+
+        /** Handle: No registra categoría */
+        if( ! categoryDB ) {
+            return response .status( 400 ) .json({
                 success: false,
                 error
             });
@@ -73,6 +99,12 @@ app .post( '/categoria', ( request, response ) => {
         /** Ejecuta siempre que no exista un error */
         response .json({
             success: true,
+            authenticated_user: {
+                _id: request .user ._id,
+                name: request .user .name,
+                email: request .user .email,
+                role: request .user .role
+            },
             category: categoryDB
         });
 
@@ -81,21 +113,37 @@ app .post( '/categoria', ( request, response ) => {
 });
 
 /** Actualizar categoría */
-app .put( '/categoria/:id', ( request, response ) => {
-    let category_id = request .params .id,  // Obtenemos los parámetros enviados (GET)
+app .put( '/categoria/:id', validateToken, ( request, response ) => {
+    let { _id, name, email, role } = request .user,      // Obtiene datos del PayLoad (Destructuración) 
+        category_id = request .params .id,  // Obtenemos los parámetros enviados (GET)
         body = request .body;               // Obtenermos los valores enviados (POST)
 
-    Category .findByIdAndUpdate( category_id, body, ( error, categoryDB ) => {   // findByIdAndUpdate(id, update, options, callback) - { new: true } 'true' devuelve el documento modificado en lugar del original. por defecto es 'false'
+    Category .findByIdAndUpdate( category_id, body, { new: true, runValidators: true }, ( error, categoryDB ) => {   // findByIdAndUpdate(id, update, options, callback) - { new: true } 'true' devuelve el documento modificado en lugar del original. por defecto es 'false'
         if( error ) {
-            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+            return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
                 success: false,
                 error
+            });
+        }
+
+        if( ! categoryDB ) {        // ! categoryDB o categoryDB === null (funciona igual)
+            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error: { 
+                    message: 'Categoría no encontrada'
+                }
             });
         }
 
         /** Ejecuta siempre que no exista un error */
         response .json({        // Cuando no se coloca el status Node asume implicitamente que fue exitosa la petición y el estado será 200 por defecto
             success: true,
+            authenticated_user: {
+                _id,
+                name,
+                email,
+                role
+            },
             user: categoryDB
         });
     });
@@ -104,12 +152,13 @@ app .put( '/categoria/:id', ( request, response ) => {
 /** Elimina Categoría 
  * Solo un Administrador puede borrar una categoría
 */
-app .delete( '/categoria/:id', ( request, response ) => {
-    let category_id = request .params .id;      // Obtiene el id del usuario enviado como parámetro por la URL (GET)
+app .delete( '/categoria/:id', [ validateToken, validateAdminRole ], ( request, response ) => {
+    let { _id, name, email, role } = request .user,      // Obtiene datos del PayLoad (Destructuración) 
+        category_id = request .params .id;      // Obtiene el id del usuario enviado como parámetro por la URL (GET)
 
     Category .findByIdAndRemove( category_id, ( error, categoryDB ) => {
         if( error ) {
-            return response .status( 400 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+            return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
                 success: false,
                 error
             });
@@ -127,6 +176,12 @@ app .delete( '/categoria/:id', ( request, response ) => {
         /** Ejecuta siempre que no exista un error */
         response .json({ 
             success: true,
+            authenticated_user: {
+                _id,
+                name,
+                email,
+                role
+            },
             user: categoryDB
         });
 

@@ -2,7 +2,7 @@ const mongoose = require( 'mongoose' );
 
 let Schema = mongoose .Schema,
     categorySchema = new Schema({
-        user: {
+        user_id: {
             type: Schema .Types .ObjectId,
             ref: 'Usuario'
         },
