@@ -1,10 +1,13 @@
 const express = require( 'express' ),
       app = express()
       /** Modelos Requeridos */
-      Product = require( '../models/producto' );    // Importa el modelo
+      Product = require( '../models/producto' ),    // Importa el modelo
+      /** Middleware Autenticación */
+      { validateToken, validateAdminRole } = require( '../middlewares/authentication' );
 
 /** Muestra todas las productos */
-app .get( '/producto', ( request, response ) => {
+app .get( '/producto', validateToken, ( request, response ) => {
+    const { _id, name, email, role } = request .user;
 
     Product .find({})
         .exec( ( error, productos ) => {
@@ -20,6 +23,12 @@ app .get( '/producto', ( request, response ) => {
             response .json({
                 success: true,
                 count: productos .length,
+                authenticated_user: {
+                    _id,
+                    name,
+                    email,
+                    role
+                },
                 product: productos
             });
 
@@ -28,8 +37,9 @@ app .get( '/producto', ( request, response ) => {
 });
 
 /** Muestra una producto por ID */
-app .get( '/producto/:id', ( request, response ) => {
-    let id = request .params .id;
+app .get( '/producto/:id', validateToken, ( request, response ) => {
+    let { _id, name, email, role } = request .user,
+        id = request .params .id;
 
     Product .findOne({
         _id: id
@@ -45,6 +55,12 @@ app .get( '/producto/:id', ( request, response ) => {
         /** Retorna la respuesta (siempre que no ocurra un error) */
         response .json({
             success: true,
+            authenticated_user: {
+                _id,
+                name,
+                email,
+                role
+            },
             product: productDB
         });
     });
@@ -52,13 +68,16 @@ app .get( '/producto/:id', ( request, response ) => {
 });
 
 /** Crea producto */
-app .post( '/producto', ( request, response ) => {
-    const { name, description, unitPrice, available } = request .body,        // Obtenemos los datos enviados de la petición (usando el concepto de Destructuración)
+app .post( '/producto', validateToken, ( request, response ) => {
+    const { _id, name: name_user, email, role } = request .user,
+          { name: name_product, description, unitPrice, category, available } = request .body,        // Obtenemos los datos enviados de la petición (usando el concepto de Destructuración)
           product = new Product({
-              name,
+              name: name_product,
               description, 
               unitPrice,
-              available
+              category,
+              available,
+              user: _id
           });
 
     /** Resgistra los datos en Mongo DB */
@@ -80,8 +99,14 @@ app .post( '/producto', ( request, response ) => {
         }
 
         /** Retorna la respuesta (siempre que no ocurra un error) */
-        response .json({
+        response .status( 201 ) .json({
             success: true,
+            authenticated_user: {
+                _id,
+                name: name_user,
+                email,
+                role
+            },
             product: productDB
         });
     });
@@ -89,11 +114,12 @@ app .post( '/producto', ( request, response ) => {
 });
 
 /** Actualizar producto */
-app .put( '/producto/:id', ( request, response ) => {   // findByIdAndUpdate(id, update, options, callback)
-    let product_id = request .params .id,   // Obtenemos los parámetros enviados (GET)
+app .put( '/producto/:id', validateToken, ( request, response ) => {   // findByIdAndUpdate(id, update, options, callback)
+    let { _id, name, email, role } = request .user,
+        product_id = request .params .id,   // Obtenemos los parámetros enviados (GET)
         body = request .body;               // Obtenermos los valores enviados (POST)
 
-    Product .findByIdAndUpdate( product_id, body, ( error, productDB ) => {
+    Product .findByIdAndUpdate( product_id, body, { new: true, runValidators: true }, ( error, productDB ) => {
         /** Valida Error de Bases de datos */
         if( error ) {
             return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
@@ -115,6 +141,12 @@ app .put( '/producto/:id', ( request, response ) => {   // findByIdAndUpdate(id,
         /** Retorna la respuesta (siempre que no ocurra un error) */
         response .json({
             success: true,
+            authenticated_user: {
+                _id,
+                name,
+                email,
+                role
+            },
             product: productDB
         });
 
@@ -123,11 +155,12 @@ app .put( '/producto/:id', ( request, response ) => {   // findByIdAndUpdate(id,
 });
 
 /** Actualizar disponibilidad del producto */
-app .patch( '/producto/:id', ( request, response ) => {
-    let product_id = request .params .id,   // Obtenemos los parámetros enviados (GET)
+app .patch( '/producto/:id', validateToken, ( request, response ) => {
+    let { _id, name, email, role } = request .user,
+        product_id = request .params .id,   // Obtenemos los parámetros enviados (GET)
         changeAvailability = { available: false };
 
-    Product .findByIdAndUpdate( product_id, changeAvailability, ( error, productDB ) => {
+    Product .findByIdAndUpdate( product_id, changeAvailability, { new: true }, ( error, productDB ) => {
         /** Valida Error de Bases de datos */
         if( error ) {
             return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
@@ -139,6 +172,12 @@ app .patch( '/producto/:id', ( request, response ) => {
         /** Ejecuta siempre que no exista un error */
         response .json({ 
             success: true,
+            authenticated_user: {
+                _id,
+                name,
+                email,
+                role
+            },
             user: productDB
         });
 
@@ -149,10 +188,11 @@ app .patch( '/producto/:id', ( request, response ) => {
 /** Elimina producto 
  * Solo un Administrador puede borrar una producto
 */
-app .delete( '/producto/:id', ( request, response ) => {
-    let product_id = request .params .id;   // Obtenemos los parámetros enviados (GET)
+app .delete( '/producto/:id', [ validateToken, validateAdminRole ], ( request, response ) => {
+    let { _id, name, email, role } = request .user,      // Obtiene datos del PayLoad (Destructuración) 
+        product_id = request .params .id;   // Obtenemos los parámetros enviados (GET)
 
-    Product .findByIdAndRemove( product_id, ( error, productDB ) => {
+    Product .findByIdAndRemove( product_id, { new: true }, ( error, productDB ) => {
         /** Valida Error de Bases de datos */
         if( error ) {
             return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
@@ -174,6 +214,12 @@ app .delete( '/producto/:id', ( request, response ) => {
         /** Ejecuta siempre que no exista un error */
         response .json({ 
             success: true,
+            authenticated_user: {
+                _id,
+                name,
+                email,
+                role
+            },
             user: productDB
         });
 
