@@ -6,14 +6,34 @@ const express = require( 'express' ),
 /** Middleware (Default options) */
 app .use( fileUpload() );
     
-/** Subir/Actualizar Imagenes */
-app .put( '/upload', ( request, response ) => {
+/** Subir/Actualizar Imagenes 
+ *  - :model > Hace referencia al Modelo o Schema que requiere la subida de una imagen
+ *  - :id    > Hace referencia al registro al que ser'a asignado dicho archivo
+*/
+app .put( '/upload/:model/:id', ( request, response ) => {      
+    let model = request .params .model,
+        id = request .params .id;
+
     /** Valida si NO hay archivos */
     if( ! request .files ) {
         return response .status( 400 ) .json({
             success: false,
             error: {
                 message: 'No se ha seleccionado ningún archivo'
+            }
+        });
+    }
+
+    /** Valida el Modelo o Schema que requiere la subida del archivo */
+    let allowedModels = [ 'usuarios', 'productos' ];    // Modelo o Schema permitidos (Los ponemos para que hagan Match con el nombre de los directorios, que contendran los archivos)
+
+    /** Valida que NO ha encontrado el Modelo o Schema permitido */
+    if( 0 > allowedModels .indexOf( model ) ) {
+        return response .status( 400 ) .json({
+            success: false,
+            error: {
+                schema: model,
+                message: `Los Modelos o Schemas permitidos son: ${ allowedModels .join( ', ' ) }`
             }
         });
     }
@@ -38,7 +58,11 @@ app .put( '/upload', ( request, response ) => {
         });
     }
 
-    file .mv( `./uploads/${ file .name }`, ( error ) => {
+    /** Cambiar el nombre del archivo */
+    let newFileName = `${ id }-${ new Date() .getTime() }.${ fileExtension }`;      // Para evitar problemas de cache por el renombre de un archivo con el mismo nombre y evitar que no refresque correctamente usamos la fecha representada en milisegundos de manera que siempre seran diferentes
+ 
+    /** Subir el Archivo */
+    file .mv( `./uploads/${ model }/${ newFileName }`, ( error ) => {
         /** Valida Error de subida de archivo */
         if( error ) {
             return response .status( 500 ) .json({
@@ -47,10 +71,14 @@ app .put( '/upload', ( request, response ) => {
             });
         }
 
+        /**  */
+
         /** Retorna la respuesta (siempre que no ocurra un error) */
         response .json({
             success: true,
+            schema: model,
             fileName: file .name,
+            newFileName: newFileName,
             message: 'Imagen subida correctamente'
         });
 
