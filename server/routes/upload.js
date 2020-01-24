@@ -1,7 +1,10 @@
 const express = require( 'express' ),
       app = express(),
       /** Dependencias */
-      fileUpload = require( 'express-fileupload' );
+      fileUpload = require( 'express-fileupload' )
+      /** Modelos o Schemas Requeridos */
+      User = require( '../models/usuario' ),    // Importa el modelo 
+      Product = require( '../models/producto' ),    // Importa el modelo 
 
 /** Middleware (Default options) */
 app .use( fileUpload() );
@@ -71,19 +74,65 @@ app .put( '/upload/:model/:id', ( request, response ) => {
             });
         }
 
-        /**  */
+        /** En este momento el archivo se encuentra subido al sistema */
+        console .group( 'Imagen subida con exito' );
+        console .log( `schema: ${ model }` );
+        console .log( `originalFileName: ${ file .name }` );
+        console .log( `newFileName: ${ newFileName }` );
+        console .groupEnd();
 
-        /** Retorna la respuesta (siempre que no ocurra un error) */
-        response .json({
-            success: true,
-            schema: model,
-            fileName: file .name,
-            newFileName: newFileName,
-            message: 'Imagen subida correctamente'
-        });
+        /** Registra imagen subida */
+        registerUserImage( id, response, newFileName );
 
     });
 
 });
+
+/** Registra imagen de usuario subida */
+let registerUserImage = ( id, response, newFileName ) => {
+
+    /** Busca el Usuario */
+    User .findById( id, ( error, usuarioDB ) => {
+        /** Valida Error de Bases de datos */
+        if( error ) {
+            return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error
+            });
+        }
+
+        /** Handle: No encuentra el usuario */
+        if( ! usuarioDB ) {
+            return response .status( 400 ) .json({
+                success: false,
+                error: {
+                    message: 'El usuario NO existe'
+                }
+            });
+        }
+
+        /** Asigna nombre de la imagen a propiedad img del Modelo Usuarios */
+        usuarioDB .img = newFileName;                      
+
+        /** Registra nombre de la imagen en la BD */
+        usuarioDB .save( ( error, usuarioGuardado ) => {
+            /** Valida Error de Bases de datos */
+            if( error ) {
+                return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                    success: false,
+                    error
+                });
+            }
+
+            /** Retorna la respuesta (siempre que no ocurra un error) */
+            response .json({
+                success: true,
+                img: newFileName,
+                user: usuarioGuardado
+            });
+        });
+
+    });
+}
 
 module .exports = app;
