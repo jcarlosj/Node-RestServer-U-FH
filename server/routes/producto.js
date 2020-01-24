@@ -86,6 +86,52 @@ app .get( '/producto/:id', validateToken, ( request, response ) => {
 
 });
 
+/** Buscar Producto */
+app .get( '/producto/buscar/:termino', validateToken, ( request, response ) => {
+    let { _id, name: name_user, email, role } = request .user,
+        since = Number( request .query .since ) || 0,
+        limit = Number( request .query .limit ) || 5,
+        searchTerm = request .params .termino,
+        regex = new RegExp( searchTerm, 'i' );      // 	Búsqueda 'case-insensitive' (no sensible a mayúsculas).
+
+    Product .find({ 
+        available: true,
+        $or: [ { name: regex }, { description: regex } ]
+    })
+        .skip( since )      // Número de documentos por salto (Filtro para paginar datos)
+        .limit( limit )     // Número límite que mostrará (Filtro para paginar datos)
+        .populate( 'category', 'name description' )
+        .sort( 'name' )     // Ordena de forma Descendente a partir del campo 'name' del Producto
+        .exec( ( error, productos ) => {
+            /** Valida Error de Bases de datos */
+            if( error ) {
+                return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                    success: false,
+                    error
+                });
+            }
+
+            /** Cuenta cantidad total de registros en la BD con usuarios que estan disponibles */
+            Product .countDocuments( { available: true }, ( error, counter ) => {
+                /** Retorna la respuesta (siempre que no ocurra un error) */
+                response .status( 201 ) .json({
+                    success: true,
+                    authenticated_user: {
+                        _id,
+                        name: name_user,
+                        email,
+                        role
+                    },
+                    count: counter,
+                    limit: productos .length,        // Cuenta cantidad de registros para mostrar
+                    products: productos
+                });
+            });
+
+        });
+
+});
+
 /** Crea producto */
 app .post( '/producto', validateToken, ( request, response ) => {
     const { _id, name: name_user, email, role } = request .user,
