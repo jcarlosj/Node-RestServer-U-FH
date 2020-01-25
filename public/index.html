@@ -10,12 +10,17 @@
     <meta name="google-signin-client_id" content="654197891799-fcm3jr2e25hap2q7i3ik5bnicj3tjjve.apps.googleusercontent.com"><!-- Step 3: Specify your app's client ID -->
 </head>
 <body>
-    <!-- Obtener imagenes en el FrontEnd-->
+    <!-- Obtener imagenes en el FrontEnd
+      Consideraciones:
+        - En despliegue de las imágenes es estático (El Token va a expirar y luego la imagen no será accesible)
+        - Se debe automatizar la URL de la imagen de manera que pueda obtenerse el Dominio, el nombre de la imagen y el Token de forma automática
+        - La automatización requiere programación del lado del FrontEnd con JavaScript o con alguno de sus Frameworks
+    -->
     <h2>Imagen de Usuario</h2>
-    <img src="http://localhost:3000/imagen/usuarios/5e23573e1d29a73c6a9318ba-1579968329887.jpeg" alt="">
+    <img src="http://localhost:3000/imagen/usuarios/5e23573e1d29a73c6a9318ba-1579968329887.jpeg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InJvbGUiOiJBRE1JTl9ST0xFIiwic3RhdHVzIjp0cnVlLCJnb29nbGUiOmZhbHNlLCJfaWQiOiI1ZTIzNTczZTFkMjlhNzNjNmE5MzE4YmEiLCJuYW1lIjoiQW5hIE1hcmlhIENhc3RybyBDaGF2ZXoiLCJlbWFpbCI6ImFuYS5jYXN0cm9AY29ycmVvLmNvIiwiX192IjowLCJpbWciOiI1ZTIzNTczZTFkMjlhNzNjNmE5MzE4YmEtMTU3OTg5NjQ1NzAyMi5qcGcifSwiaWF0IjoxNTc5OTY0NjY1LCJleHAiOjE1ODAxMzc0NjV9.GMHQ8mbmHQdPzHX66FpxD63ZRsXQzvdsvcyad5veYqs" alt="">
 
     <h2>Imagen de Producto</h2>
-    <img src="http://localhost:3000/imagen/productos/5e2a1f388be398699c21701b-1579970943739.jpg" alt="">
+    <img src="http://localhost:3000/imagen/productos/5e2a1f388be398699c21701b-1579970943739.jpg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InJvbGUiOiJBRE1JTl9ST0xFIiwic3RhdHVzIjp0cnVlLCJnb29nbGUiOmZhbHNlLCJfaWQiOiI1ZTIzNTczZTFkMjlhNzNjNmE5MzE4YmEiLCJuYW1lIjoiQW5hIE1hcmlhIENhc3RybyBDaGF2ZXoiLCJlbWFpbCI6ImFuYS5jYXN0cm9AY29ycmVvLmNvIiwiX192IjowLCJpbWciOiI1ZTIzNTczZTFkMjlhNzNjNmE5MzE4YmEtMTU3OTg5NjQ1NzAyMi5qcGcifSwiaWF0IjoxNTc5OTY0NjY1LCJleHAiOjE1ODAxMzc0NjV9.GMHQ8mbmHQdPzHX66FpxD63ZRsXQzvdsvcyad5veYqs" alt="">
 
     <!-- Step 4: Add a Google Sign-In button -->
     <div class="g-signin2" data-onsuccess="onSignIn"></div>

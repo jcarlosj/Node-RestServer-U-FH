@@ -2,10 +2,12 @@ const express = require( 'express' ),
       app = express(),
       /** Modulos Nativos de Node */
       fs = require( 'fs' ),         // Permite interactuar con los archivos del sistema de manera similar a POXIS
-      path = require( 'path' );     // Para convertir a rutas absulutas
+      path = require( 'path' ),     // Para convertir a rutas absulutas
+      /** Middleware Autenticación */
+      { validateTokenImage } = require( '../middlewares/authentication' );
 
 /** Obtener imagenes */
-app .get( '/imagen/:model/:img', ( request, response ) => {
+app .get( '/imagen/:model/:img', validateTokenImage, ( request, response ) => {
     let model = request .params .model,
         nameImage = request .params .img,
         noImagePath = path .resolve( __dirname, '../assets/images/no-image.png' ),

@@ -44,7 +44,34 @@ let validateAdminRole = ( request, response, next ) => {
 
 }
 
+/** Verifica Token para la Imagen */
+let validateTokenImage = ( request, response, next ) => {
+    let token = request .query .token;      // Obtiene la variable 'token' de la URL así: http:{{url}}/... ?token=<valor>
+
+    console .log( 'Token en la URL', token );
+
+    /** Match TOKEN: Verificación del Token */
+    jwt .verify( token, process .env .SEED, ( error, decoded ) => {
+        if( error ) {
+            return response .status( 401 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error: {
+                    message: 'No se ha proporcionado un TOKEN o no es válido'
+                }
+            });
+        }
+
+        console .info( 'Middleware > PayLoad', decoded );
+
+        /** Solo se ejecuta si la información es correcta */
+        request .user = decoded .user;  // Envio el Payload del JWT
+        next();     // Le da continuación a la ejecución del código donde implementemos el Middleware 'validateToken'
+    });
+    
+}
+
 module .exports = {
     validateToken,      
-    validateAdminRole  
+    validateAdminRole,
+    validateTokenImage 
 }
