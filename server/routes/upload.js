@@ -2,7 +2,7 @@ const express = require( 'express' ),
       app = express(),
       /** Modulos Nativos de Node */
       fs = require( 'fs' ),         // Permite interactuar con los archivos del sistema de manera similar a POXIS
-      path = require( 'path' ),     // Modulo Nativo de 
+      path = require( 'path' ),     // Para convertir a rutas absulutas
       /** Dependencias */
       fileUpload = require( 'express-fileupload' )
       /** Modelos o Schemas Requeridos */
