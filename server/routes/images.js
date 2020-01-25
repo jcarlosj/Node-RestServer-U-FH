@@ -7,11 +7,16 @@ const express = require( 'express' ),
 /** Obtener imagenes */
 app .get( '/imagen/:model/:img', ( request, response ) => {
     let model = request .params .model,
-        img = request .params .img,
-        pathImageFile = `./uploads/${ model }/${ img }`,
-        noImagePath = path .resolve( __dirname, '../assets/images/no-image.png' );
+        nameImage = request .params .img,
+        noImagePath = path .resolve( __dirname, '../assets/images/no-image.png' ),
+        pathImageFile = path .resolve( __dirname, `../../uploads/${ model }/${ nameImage }` );    // Resuelve secuencia de rutas o segmentos de ruta en una ruta absoluta;
 
-    response .sendFile( noImagePath );  // Despliega Imagen no encontrada
+    if( fs .existsSync( pathImageFile ) ) {   // Valida (de forma sincrona) si existe un archivo
+        response .sendFile( pathImageFile );  // Despliega Imagen Encontrada
+    }
+    else {
+        response .sendFile( noImagePath );    // Despliega Imagen no encontrada
+    }
 
 });
 
