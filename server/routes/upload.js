@@ -14,7 +14,7 @@ app .use( fileUpload() );
     
 /** Subir/Actualizar Imagenes 
  *  - :model > Hace referencia al Modelo o Schema que requiere la subida de una imagen
- *  - :id    > Hace referencia al registro al que ser'a asignado dicho archivo
+ *  - :id    > Hace referencia al registro al que sera asignado dicho archivo
 */
 app .put( '/upload/:model/:id', ( request, response ) => {      
     let model = request .params .model,
@@ -85,7 +85,12 @@ app .put( '/upload/:model/:id', ( request, response ) => {
         console .groupEnd();
 
         /** Registra imagen subida */
-        registerUserImage( id, response, newFileName );
+        if( 'usuarios' === model ) {
+            registerUserImage( id, response, newFileName );
+        }
+        if( 'productos' === model ) {
+            registerProductImage( id, response, newFileName );
+        }
 
     });
 
@@ -138,6 +143,59 @@ let registerUserImage = ( id, response, newFileName ) => {
                 success: true,
                 img: newFileName,
                 user: usuarioGuardado
+            });
+        });
+
+    });
+}
+
+/** Registra imagen de usuario subida */
+let registerProductImage = ( id, response, newFileName ) => {
+
+    /** Busca el Usuario */
+    Product .findById( id, ( error, productoDB ) => {
+        /** Valida Error de Bases de datos */
+        if( error ) {
+            deleteFile( newFileName, 'productos' );   // Eliminar Archivo Subido
+
+            return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                success: false,
+                error
+            });
+        }
+
+        /** Handle: No encuentra el usuario */
+        if( ! productoDB ) {
+            deleteFile( newFileName, 'productos' );   // Eliminar Archivo Subido
+
+            return response .status( 400 ) .json({
+                success: false,
+                error: {
+                    message: 'El usuario NO existe'
+                }
+            });
+        }
+
+        deleteFile( productoDB .img, 'productos' );   // Eliminar Archivo de Imagen de Usuarios
+
+        /** Asigna nombre de la imagen a propiedad img del Modelo Usuarios */
+        productoDB .img = newFileName;                      
+
+        /** Registra nombre de la imagen en la BD */
+        productoDB .save( ( error, productoGuardado ) => {
+            /** Valida Error de Bases de datos */
+            if( error ) {
+                return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
+                    success: false,
+                    error
+                });
+            }
+
+            /** Retorna la respuesta (siempre que no ocurra un error) */
+            response .json({
+                success: true,
+                img: newFileName,
+                product: productoGuardado
             });
         });
 

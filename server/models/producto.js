@@ -9,6 +9,10 @@ let Schema = mongoose .Schema,
         description: {
             type: String
         },
+        img: {
+            type: String,
+            required: false     /** No definir 'required' también lo define como 'false' por defecto */
+        },
         unitPrice: {
             type: Number,
             required: [ true, 'El precio únitario del producto es requerido' ]
