@@ -1,5 +1,8 @@
 const express = require( 'express' ),
       app = express(),
+      /** Modulos Nativos de Node */
+      fs = require( 'fs' ),         // Permite interactuar con los archivos del sistema de manera similar a POXIS
+      path = require( 'path' ),     // Modulo Nativo de 
       /** Dependencias */
       fileUpload = require( 'express-fileupload' )
       /** Modelos o Schemas Requeridos */
@@ -95,6 +98,8 @@ let registerUserImage = ( id, response, newFileName ) => {
     User .findById( id, ( error, usuarioDB ) => {
         /** Valida Error de Bases de datos */
         if( error ) {
+            deleteFile( newFileName, 'usuarios' );   // Eliminar Archivo Subido
+
             return response .status( 500 ) .json({  /** NOTA: usar el return hace que salga (Finalice el registro de datos) y evita que deba rescribir un else */
                 success: false,
                 error
@@ -103,6 +108,8 @@ let registerUserImage = ( id, response, newFileName ) => {
 
         /** Handle: No encuentra el usuario */
         if( ! usuarioDB ) {
+            deleteFile( newFileName, 'usuarios' );   // Eliminar Archivo Subido
+
             return response .status( 400 ) .json({
                 success: false,
                 error: {
@@ -110,6 +117,8 @@ let registerUserImage = ( id, response, newFileName ) => {
                 }
             });
         }
+
+        deleteFile( usuarioDB .img, 'usuarios' );   // Eliminar Archivo de Imagen de Usuarios
 
         /** Asigna nombre de la imagen a propiedad img del Modelo Usuarios */
         usuarioDB .img = newFileName;                      
@@ -133,6 +142,15 @@ let registerUserImage = ( id, response, newFileName ) => {
         });
 
     });
+}
+
+/** Elimina Archivo existente */
+let deleteFile = ( fileName, model ) => {
+    let pathFile = path .resolve( __dirname, `../../uploads/${ model }/${ fileName }` );    // Resuelve secuencia de rutas o segmentos de ruta en una ruta absoluta
+
+    if( fs .existsSync( pathFile ) ) {      // Valida (de forma sincrona) si existe un archivo
+        fs .unlinkSync( pathFile );         // Elimina archivos del sistema
+    }
 }
 
 module .exports = app;
